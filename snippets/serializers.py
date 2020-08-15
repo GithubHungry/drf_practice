@@ -26,20 +26,21 @@ from .models import Snippet, LANGUAGE_CHOICES, STYLE_CHOICES
 #         instance.save()
 #         return instance
 
-class SnippetSerializer(serializers.ModelSerializer):
+class SnippetSerializer(serializers.HyperlinkedModelSerializer):
     # 1) An automatically determined set of fields.
     # 2) Simple default implementations for the create() and update() methods.
     owner = serializers.ReadOnlyField(source='owner.username')
     # The source argument controls which attribute is used to populate a field, and can point at any attribute
-    # on the serialized instance.
+    # on the serialized instance.snippet_detail_highlight
+    highlight = serializers.HyperlinkedIdentityField(view_name='snippet-highlight', format='html')
 
     class Meta:
         model = Snippet
-        fields = ['id', 'title', 'owner', 'code', 'linenos', 'language', 'style']
+        fields = ['url', 'id', 'highlight', 'title', 'owner', 'code', 'linenos', 'language', 'style']
 
 
-class UserSerializer(serializers.ModelSerializer):
-    snippets = serializers.PrimaryKeyRelatedField(many=True, queryset=Snippet.objects.all())
+class UserSerializer(serializers.HyperlinkedModelSerializer):
+    snippets = serializers.HyperlinkedRelatedField(many=True, view_name='snippet-detail', read_only=True)
 
     class Meta:
         model = User
