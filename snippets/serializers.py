@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User
 from rest_framework import serializers
 
 from .models import Snippet, LANGUAGE_CHOICES, STYLE_CHOICES
@@ -28,7 +29,18 @@ from .models import Snippet, LANGUAGE_CHOICES, STYLE_CHOICES
 class SnippetSerializer(serializers.ModelSerializer):
     # 1) An automatically determined set of fields.
     # 2) Simple default implementations for the create() and update() methods.
+    owner = serializers.ReadOnlyField(source='owner.username')
+    # The source argument controls which attribute is used to populate a field, and can point at any attribute
+    # on the serialized instance.
 
     class Meta:
         model = Snippet
-        fields = ['id', 'title', 'code', 'linenos', 'language', 'style']
+        fields = ['id', 'title', 'owner', 'code', 'linenos', 'language', 'style']
+
+
+class UserSerializer(serializers.ModelSerializer):
+    snippets = serializers.PrimaryKeyRelatedField(many=True, queryset=Snippet.objects.all())
+
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'snippets']
